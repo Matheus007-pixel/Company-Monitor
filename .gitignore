@@ -1,0 +1,17 @@
+# Ambiente virtual
+
+.venv/
+
+# Cache do Python
+
+**pycache**/
+*.py[cod]
+dir
+# Configurações do PyCharm
+
+.idea/
+
+# Arquivos temporários
+
+*.log
+*.tmp
