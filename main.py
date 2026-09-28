@@ -1,5 +1,6 @@
 from monitor import coletar_informacoes
-from analise import analisar_computador, analisar_processos, obter_status_geral
+from analise import analisar_computador, analisar_processos, obter_status_geral,analisar_historico
+from historico import registrar_medicao, ler_historico
 
 
 informacoes = coletar_informacoes()
@@ -12,6 +13,13 @@ analise = analisar_computador(
 )
 
 status_geral = obter_status_geral(analise)
+
+registrar_medicao(informacoes, status_geral)
+
+medicoes = ler_historico()
+
+analise_historico = analisar_historico(medicoes)
+
 
 analise_processos = analisar_processos(informacoes["processos"])
 
@@ -45,3 +53,14 @@ for processo in informacoes["processos"]:
         f"{processo['memoria']:.2f}% - "
         f"{processo['memoria_mb']:.2f} MB"
     )
+
+print("\n--- ANÁLISE DO HISTÓRICO ---")
+
+print(f"Quantidade de medições: {analise_historico['quantidade']}")
+print(f"CPU média: {analise_historico['cpu_media']:.2f}%")
+print(f"RAM média: {analise_historico['ram_media']:.2f}%")
+print(f"Maior CPU: {analise_historico['maior_cpu']:.2f}%")
+print(f"Maior RAM: {analise_historico['maior_ram']:.2f}%")
+print(f"Medições críticas: {analise_historico['criticos']}")
+print(f"Medições em atenção: {analise_historico['atencao']}")
+print(f"Medições normais: {analise_historico['ok']}")

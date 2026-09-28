@@ -31,4 +31,16 @@ def registrar_medicao (informacoes, status_geral):
             status_geral
         ])
 
+def ler_historico():
+    if not ARQUIVO_HISTORICO.exists():
+        return []
 
+    medicoes = []
+
+    with open(ARQUIVO_HISTORICO, "r", newline="", encoding="utf-8") as arquivo:
+        leitor = csv.DictReader(arquivo)
+
+        for linha in leitor:
+            medicoes.append(linha)
+
+    return medicoes

@@ -114,3 +114,46 @@ def analisar_processos(processos):
         "mensagem": mensagem,
         "processos": processos
     }
+
+def analisar_historico(medicoes):
+    if not medicoes:
+        return {
+            "quantidade": 0,
+            "cpu_medida":0,
+            "ram_medida": 0,
+            "maior_cpu": 0,
+            "maior_ram": 0,
+            "criticos": 0,
+            "atencao": 0,
+            "ok": 0
+
+        }
+    cpus = [float(medicao["cpu"]) for medicao in medicoes]
+    rams = [float(medicao["ram"]) for medicao in medicoes]
+
+    criticos = sum(
+        1 for medicao in medicoes
+        if medicao["status_geral"] == "CRÍTICO"
+    )
+
+    atencao = sum(
+        1 for medicao in medicoes
+        if medicao["status_geral"] == "ATENÇÃO"
+    )
+
+    ok = sum(
+        1 for medicao in medicoes
+        if medicao["status_geral"] == "OK"
+    )
+
+    return {
+        "quantidade": len(medicoes),
+        "cpu_media": sum(cpus) / len(cpus),
+        "ram_media": sum(rams) / len(rams),
+        "maior_cpu": max(cpus),
+        "maior_ram": max(rams),
+        "criticos": criticos,
+        "atencao": atencao,
+        "ok": ok
+    }
+
