@@ -4,15 +4,24 @@ import platform
 import datetime
 
 def obter_cpu():
-    return psutil.cpu_percent(interval=1)
+    try:
+        return psutil.cpu_percent(interval=1)
+    except Exception:
+        return None
 
 def obter_ram():
-    ram = psutil.virtual_memory()
-    return ram.percent
+    try:
+        ram = psutil.virtual_memory()
+        return ram.percent
+    except Exception:
+        return None
 
 def obter_disco():
-    disco = psutil.disk_usage("C:\\")
-    return disco.percent
+    try:
+        disco = psutil.disk_usage("C:\\")
+        return disco.percent
+    except Exception:
+        return None
 
 def verificar_internet():
     try:
@@ -66,7 +75,8 @@ def obter_processos():
                 "memoria_mb": memoria_mb
             })
 
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+
             continue
 
     processos.sort(key=lambda processo: processo["memoria"], reverse=True)

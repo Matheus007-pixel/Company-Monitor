@@ -1,4 +1,9 @@
 def analisar_cpu(uso_cpu):
+    if uso_cpu is None:
+        return {
+            "status": "INDISPONÍVEL",
+            "mensagem": "Não foi possível obter o uso da CPU."
+        }
     if uso_cpu >= 90:
         return {
             "status": "CRÍTICO",
@@ -16,6 +21,12 @@ def analisar_cpu(uso_cpu):
         }
 
 def analisar_ram(uso_ram):
+    if uso_ram is None:
+        return {
+            "status": "INDISPONÍVEL",
+            "mensagem": "Não foi possível obter o uso da RAM."
+        }
+
     if uso_ram >= 90:
         return {
             "status": "CRÍTICO",
@@ -33,6 +44,12 @@ def analisar_ram(uso_ram):
         }
 
 def analisar_disco(uso_disco):
+    if uso_disco is None:
+        return {
+            "status": "INDISPONÍVEL",
+            "mensagem": "Não foi possível obter o uso do disco."
+        }
+
     if uso_disco >= 90:
         return {
             "status": "CRÍTICO",

@@ -5,3 +5,10 @@ data_hora,computador,cpu,ram,disco,internet,status_geral
 28/09/2026 20:16:08,Menezes,22.5,93.8,19.3,True,CRÍTICO
 28/09/2026 20:26:14,Menezes,12.5,92.3,19.3,True,CRÍTICO
 28/09/2026 20:28:20,Menezes,13.5,93.6,19.3,True,CRÍTICO
+29/09/2026 21:15:38,Menezes,19.9,91.3,19.5,True,CRÍTICO
+29/09/2026 21:18:12,Menezes,18.1,93.3,19.5,True,CRÍTICO
+29/09/2026 21:19:08,Menezes,10.5,93.6,19.5,True,CRÍTICO
+29/09/2026 21:20:09,Menezes,14.9,87.2,19.5,True,ATENÇÃO
+29/09/2026 21:21:21,Menezes,16.2,89.0,19.5,True,ATENÇÃO
+29/09/2026 21:27:39,Menezes,12.0,89.9,19.5,True,ATENÇÃO
+29/09/2026 21:28:27,Menezes,20.1,90.9,19.5,True,CRÍTICO
