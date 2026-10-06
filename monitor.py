@@ -67,7 +67,12 @@ def obter_processos():
     for processo in psutil.process_iter(["name", "memory_percent", "memory_info"]):
         try:
             memoria_percentual = processo.info["memory_percent"]
-            memoria_mb = processo.info["memory_info"].rss / (1024 * 1024)
+            memoria_info = processo.info["memory_info"]
+
+            if memoria_percentual is None or memoria_info is None:
+                continue
+
+            memoria_mb = memoria_info.rss / (1024 * 1024)
 
             processos.append({
                 "nome": processo.info["name"],
