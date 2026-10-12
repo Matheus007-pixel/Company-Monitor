@@ -11,6 +11,16 @@ st.set_page_config(
     page_icon="🖥️",
     layout="wide"
 )
+def exibir_status(status, texto):
+    if status == "OK":
+        st.success(texto)
+    elif status == "ATENÇÃO":
+        st.warning(texto)
+    elif status == "CRÍTICO":
+        st.error(texto)
+    else:
+        st.info(texto)
+
 
 st.title("🖥️ Company Monitor")
 st.caption("Monitoramento e análise de desempemho do computador")
@@ -47,7 +57,7 @@ st.divider()
 
 st.subheader("Diagnóstico do computador")
 
-st.metric("Status geral", status_geral)
+exibir_status(status_geral, f"**Status geral: {status_geral}**")
 
 col_cpu, col_ram, col_disco, col_internet = st.columns(4)
 
@@ -59,7 +69,7 @@ for coluna, recurso in [
 ]:
     with coluna:
         st.markdown(f"**{recurso.upper()}**")
-        st.write(f"Status: {analise[recurso]['status']}")
+        exibir_status(analise[recurso]["status"], analise[recurso]["status"])
         st.caption(analise[recurso]["mensagem"])
 
 
@@ -127,8 +137,5 @@ h7.metric("Tendência CPU", resumo["tendencia_cpu"])
 h8.metric("Tendência RAM", resumo["tendencia_ram"])
 
 
-
-
-
-st.subheader("Dados coletados")
-st.json(dados)
+with st.expander("Dados brutos (depuração)"):
+    st.json(dados)
