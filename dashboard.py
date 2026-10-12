@@ -2,7 +2,7 @@ import streamlit as st
 import monitor
 
 from analise import analisar_computador, obter_status_geral, analisar_historico
-from historico import ler_historico
+from historico import ler_historico, registrar_medicao
 
 
 
@@ -24,6 +24,8 @@ def exibir_status(status, texto):
 
 st.title("🖥️ Company Monitor")
 st.caption("Monitoramento e análise de desempemho do computador")
+
+
 
 st.subheader("Desempenho em tempo real")
 
@@ -94,6 +96,10 @@ else:
 
 st.divider()
 
+if st.button("Registrar medição no histórico"):
+    registrar_medicao(dados, status_geral)
+    st.success("Medição registrada.")
+
 st.subheader("Histórico de desempenho")
 
 medicoes = ler_historico()
@@ -108,9 +114,9 @@ if medicoes:
             "RAM": float(medicao["ram"])
         })
 
-    st.write("Histórico de CPU e RAM")
+    st.caption("Últimas 10 medições, da mais recente para a mais antiga")
 
-    for medicao in dados_grafico:
+    for medicao in reversed(dados_grafico[-10:]):
         st.write(
             f"**{medicao['Data e hora']}** — "
             f"CPU: {medicao['CPU']:.1f}% | "
