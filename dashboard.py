@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import monitor
 
 from analise import analisar_computador, obter_status_geral, analisar_historico
@@ -113,6 +114,15 @@ if medicoes:
             "CPU": float(medicao["cpu"]),
             "RAM": float(medicao["ram"])
         })
+
+        df = pd.DataFrame(dados_grafico)
+        df["Data e hora"] = pd.to_datetime(
+            df["Data e hora"],
+            format="%d/%m/%Y %H:%M:%S"
+        )
+        df = df.set_index("Data e hora")
+
+        st.line_chart(df[["CPU", "RAM"]])
 
     st.caption("Últimas 10 medições, da mais recente para a mais antiga")
 
