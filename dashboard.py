@@ -1,8 +1,9 @@
 import streamlit as st
 import monitor
 
-from analise import analisar_computador, obter_status_geral
+from analise import analisar_computador, obter_status_geral, analisar_historico
 from historico import ler_historico
+
 
 
 st.set_page_config(
@@ -107,6 +108,23 @@ if medicoes:
         )
 else:
     st.info("Ainda não existem medições no histórico.")
+
+st.divider()
+st.subheader("Indicadores históricos")
+
+resumo = analisar_historico(ler_historico())
+
+h1, h2, h3, h4 = st.columns(4)
+h1.metric("Medições", resumo["quantidade"])
+h2.metric("CPU média", f"{resumo['cpu_media']:.1f}%")
+h3.metric("RAM média", f"{resumo['ram_media']:.1f}%")
+h4.metric("Críticas", resumo["criticos"])
+
+h5, h6, h7, h8 = st.columns(4)
+h5.metric("Maior CPU", f"{resumo['maior_cpu']:.1f}%")
+h6.metric("Maior RAM", f"{resumo['maior_ram']:.1f}%")
+h7.metric("Tendência CPU", resumo["tendencia_cpu"])
+h8.metric("Tendência RAM", resumo["tendencia_ram"])
 
 
 
