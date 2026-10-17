@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 import streamlit as st
 import monitor
@@ -5,6 +7,8 @@ import monitor
 from analise import analisar_computador, obter_status_geral, analisar_historico
 from historico import ler_historico, registrar_medicao
 
+
+INTERVALO_ATUALIZACAO = 5  # segundos
 
 st.set_page_config(
     page_title="Company Monitor",
@@ -24,30 +28,31 @@ def exibir_status(status, texto):
         st.info(texto)
 
 
-st.title("🖥️ Company Monitor")
-st.caption("Monitoramento e análise de desempenho do computador")
+@st.cache_data(ttl=4)
+def coletar_dados():
+    # O cache de 4 segundos evita coletar duas vezes quando mais de um
+    # trecho da página pede os dados quase ao mesmo tempo.
+    return monitor.coletar_informacoes()
 
-# Coleta os dados reais do computador
-dados = monitor.coletar_informacoes()
 
-analise = analisar_computador(
-    dados["cpu"],
-    dados["ram"],
-    dados["disco"],
-    dados["internet"]
-)
+def obter_diagnostico():
+    dados = coletar_dados()
 
-status_geral = obter_status_geral(analise)
+    analise = analisar_computador(
+        dados["cpu"],
+        dados["ram"],
+        dados["disco"],
+        dados["internet"]
+    )
 
-tab_resumo, tab_graficos, tab_processos, tab_historico = st.tabs([
-    "Resumo",
-    "Gráficos",
-    "Processos",
-    "Histórico"
-])
+    status_geral = obter_status_geral(analise)
 
-# --- Aba Resumo ---
-with tab_resumo:
+    return dados, analise, status_geral
+
+
+def painel_resumo():
+    dados, analise, status_geral = obter_diagnostico()
+
     st.subheader("Desempenho em tempo real")
 
     col1, col2, col3 = st.columns(3)
@@ -83,6 +88,49 @@ with tab_resumo:
             )
             st.caption(analise[recurso]["mensagem"])
 
+    st.caption(f"Última atualização: {datetime.now().strftime('%H:%M:%S')}")
+
+
+def painel_processos():
+    dados, _, _ = obter_diagnostico()
+
+    st.subheader("Processos com maior consumo de RAM")
+
+    processos = dados["processos"]
+
+    if processos:
+        for processo in processos:
+            st.write(
+                f"**{processo['nome']}** — "
+                f"{processo['memoria']:.2f}% de RAM "
+                f"({processo['memoria_mb']:.2f} MB)"
+            )
+    else:
+        st.info("Nenhum processo disponível para exibição.")
+
+    with st.expander("Dados brutos (depuração)"):
+        st.json(dados)
+
+
+st.title("🖥️ Company Monitor")
+st.caption("Monitoramento e análise de desempenho do computador")
+
+atualizar = st.sidebar.toggle("Atualização automática", value=True)
+st.sidebar.caption(f"Atualiza a cada {INTERVALO_ATUALIZACAO} segundos")
+
+intervalo = INTERVALO_ATUALIZACAO if atualizar else None
+
+tab_resumo, tab_graficos, tab_processos, tab_historico = st.tabs([
+    "Resumo",
+    "Gráficos",
+    "Processos",
+    "Histórico"
+])
+
+# --- Aba Resumo ---
+with tab_resumo:
+    st.fragment(painel_resumo, run_every=intervalo)()
+
 # --- Aba Histórico ---
 # Fica antes da aba Gráficos no código para que o botão registre a medição
 # antes de o gráfico ler o CSV. Na tela, a ordem das abas continua a mesma.
@@ -90,6 +138,7 @@ with tab_historico:
     st.subheader("Histórico de desempenho")
 
     if st.button("Registrar medição no histórico"):
+        dados, _, status_geral = obter_diagnostico()
         registrar_medicao(dados, status_geral)
         st.success("Medição registrada.")
 
@@ -151,19 +200,4 @@ with tab_graficos:
 
 # --- Aba Processos ---
 with tab_processos:
-    st.subheader("Processos com maior consumo de RAM")
-
-    processos = dados["processos"]
-
-    if processos:
-        for processo in processos:
-            st.write(
-                f"**{processo['nome']}** — "
-                f"{processo['memoria']:.2f}% de RAM "
-                f"({processo['memoria_mb']:.2f} MB)"
-            )
-    else:
-        st.info("Nenhum processo disponível para exibição.")
-
-    with st.expander("Dados brutos (depuração)"):
-        st.json(dados)
+    st.fragment(painel_processos, run_every=intervalo)()
