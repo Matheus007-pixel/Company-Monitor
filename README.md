@@ -4,6 +4,7 @@ Aplicação de monitoramento e análise de desempenho de computadores, desenvolv
  
 O projeto coleta métricas da máquina, classifica o estado dos recursos, identifica os processos que mais consomem memória, guarda um histórico das medições e apresenta tudo em um dashboard web feito com Streamlit. Também pode ser executado no terminal.
 
+![Dashboard do Company Monitor](docs/dashboard.png)
 
 ## Tecnologias
  
@@ -109,7 +110,7 @@ Spotify.exe - 3.56% - 282.45 MB
 * [x] Histórico de métricas
 * [x] Dashboard web
 * [x] Indicadores históricos e tendências
-* [ ] Gráficos históricos de CPU e RAM
+* [x] Gráficos históricos de CPU e RAM
 * [ ] Diagnóstico avançado dos processos
 * [ ] Banco de dados
 * [ ] API com FastAPI
