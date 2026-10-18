@@ -151,32 +151,70 @@ with tab_resumo:
 with tab_historico:
     st.subheader("Histórico de desempenho")
 
-    if st.button("Registrar medição no histórico"):
+    if st.button("Registrar medição no histórico", type="primary"):
         dados, _, status_geral = obter_diagnostico()
         registrar_medicao(dados, status_geral)
         st.success("Medição registrada.")
 
     medicoes = ler_historico()
 
+    # Usado pela aba Gráficos. Linhas corrompidas no CSV são ignoradas.
     dados_grafico = []
 
     for medicao in medicoes:
-        dados_grafico.append({
-            "Data e hora": medicao["data_hora"],
-            "CPU": float(medicao["cpu"]),
-            "RAM": float(medicao["ram"]),
-            "Disco": float(medicao["disco"])
-        })
+        try:
+            dados_grafico.append({
+                "Data e hora": medicao["data_hora"],
+                "CPU": float(medicao["cpu"]),
+                "RAM": float(medicao["ram"]),
+                "Disco": float(medicao["disco"])
+            })
+        except (ValueError, TypeError, KeyError):
+            continue
 
-    if dados_grafico:
-        st.caption("Últimas 10 medições, da mais recente para a mais antiga")
+    if medicoes:
+        icones = {"OK": "🟢", "ATENÇÃO": "🟡", "CRÍTICO": "🔴"}
 
-        for medicao in reversed(dados_grafico[-10:]):
-            st.write(
-                f"**{medicao['Data e hora']}** — "
-                f"CPU: {medicao['CPU']:.1f}% | "
-                f"RAM: {medicao['RAM']:.1f}%"
-            )
+        st.caption(
+            f"{len(medicoes)} medições registradas. "
+            "Abaixo, as 10 mais recentes, da mais recente para a mais antiga."
+        )
+
+        df_hist = pd.DataFrame(list(reversed(medicoes[-10:])))
+
+        for coluna in ["cpu", "ram", "disco"]:
+            df_hist[coluna] = pd.to_numeric(df_hist[coluna], errors="coerce")
+
+        df_hist["internet"] = df_hist["internet"].map(
+            {"True": "Online", "False": "Offline"}
+        )
+        df_hist["status_geral"] = df_hist["status_geral"].map(
+            lambda s: f"{icones.get(s, '⚪')} {s}"
+        )
+
+        df_hist = df_hist[[
+            "data_hora", "cpu", "ram", "disco", "internet", "status_geral"
+        ]]
+        df_hist.columns = [
+            "Data e hora", "CPU", "RAM", "Disco", "Internet", "Status"
+        ]
+
+        st.dataframe(
+            df_hist,
+            hide_index=True,
+            width="stretch",
+            column_config={
+                "CPU": st.column_config.ProgressColumn(
+                    "CPU", format="%.1f%%", min_value=0, max_value=100
+                ),
+                "RAM": st.column_config.ProgressColumn(
+                    "RAM", format="%.1f%%", min_value=0, max_value=100
+                ),
+                "Disco": st.column_config.ProgressColumn(
+                    "Disco", format="%.1f%%", min_value=0, max_value=100
+                ),
+            },
+        )
     else:
         st.info("Ainda não existem medições no histórico.")
 
