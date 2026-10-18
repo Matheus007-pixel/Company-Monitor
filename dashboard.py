@@ -9,7 +9,7 @@ from analise import (
     obter_status_geral,
     analisar_historico,
     analisar_processos,
-    agrupar_processos,
+
 )
 from historico import ler_historico, registrar_medicao
 
@@ -102,7 +102,7 @@ def painel_processos():
 
     st.subheader("Processos com maior consumo de RAM")
 
-    processos = agrupar_processos(dados["processos"])
+    processos = dados["processos"]
 
     if processos:
         resultado = analisar_processos(processos)

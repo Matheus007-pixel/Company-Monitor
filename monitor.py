@@ -3,6 +3,8 @@ import socket
 import platform
 import datetime
 
+from analise import agrupar_processos
+
 def obter_cpu():
     try:
         return psutil.cpu_percent(interval=1)
@@ -84,7 +86,5 @@ def obter_processos():
 
             continue
 
-    processos.sort(key=lambda processo: processo["memoria"], reverse=True)
-
-    return processos[:10]
+    return agrupar_processos(processos)[:10]
 
