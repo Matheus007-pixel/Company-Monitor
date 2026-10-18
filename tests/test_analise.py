@@ -118,3 +118,11 @@ def test_processos_mensagem_cita_o_maior_processo():
     resultado = analisar_processos(processos)
 
     assert "chrome.exe" in resultado["mensagem"]
+
+def test_status_geral_indisponivel_nao_vira_ok():
+    assert obter_status_geral(montar_analise(cpu="INDISPONÍVEL")) == "ATENÇÃO"
+
+
+def test_status_geral_critico_vence_indisponivel():
+    analise = montar_analise(cpu="INDISPONÍVEL", disco="CRÍTICO")
+    assert obter_status_geral(analise) == "CRÍTICO"

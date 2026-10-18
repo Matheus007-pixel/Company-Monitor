@@ -97,3 +97,18 @@ def test_historico_tendencia_ram(valores, esperado):
     medicoes = [medicao(50, v) for v in valores]
 
     assert analisar_historico(medicoes)["tendencia_ram"] == esperado
+
+def test_historico_quantidade_e_status_ignoram_invalidas():
+    medicoes = [
+        medicao(10, 10, "OK"),
+        {"cpu": "abc", "ram": "20", "status_geral": "CRÍTICO"},  # inválida
+        medicao(150, 50, "CRÍTICO"),                              # inválida
+        medicao(30, 30, "ATENÇÃO"),
+    ]
+
+    resultado = analisar_historico(medicoes)
+
+    assert resultado["quantidade"] == 2
+    assert resultado["criticos"] == 0
+    assert resultado["atencao"] == 1
+    assert resultado["ok"] == 1

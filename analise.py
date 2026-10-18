@@ -95,7 +95,7 @@ def obter_status_geral(analise):
 
     if "CRÍTICO" in status:
         return "CRÍTICO"
-    elif "ATENÇÃO" in status:
+    elif "ATENÇÃO" in status or "INDISPONÍVEL" in status:
         return "ATENÇÃO"
     else:
         return "OK"
@@ -148,6 +148,7 @@ def analisar_historico(medicoes):
         }
     cpus = []
     rams = []
+    validas = []
 
     for medicao in medicoes:
         try:
@@ -161,6 +162,7 @@ def analisar_historico(medicoes):
 
         cpus.append(cpu)
         rams.append(ram)
+        validas.append(medicao)
 
     if len(rams) >= 4:
         metade = len(rams) // 2
@@ -207,22 +209,22 @@ def analisar_historico(medicoes):
         }
 
     criticos = sum(
-        1 for medicao in medicoes
+        1 for medicao in validas
         if medicao["status_geral"] == "CRÍTICO"
     )
 
     atencao = sum(
-        1 for medicao in medicoes
+        1 for medicao in validas
         if medicao["status_geral"] == "ATENÇÃO"
     )
 
     ok = sum(
-        1 for medicao in medicoes
+        1 for medicao in validas
         if medicao["status_geral"] == "OK"
     )
 
     return {
-        "quantidade": len(medicoes),
+        "quantidade": len(validas),
         "cpu_media": sum(cpus) / len(cpus),
         "ram_media": sum(rams) / len(rams),
         "tendencia_ram": tendencia_ram,
