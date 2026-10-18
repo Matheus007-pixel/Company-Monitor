@@ -8,6 +8,7 @@ from analise import (
     analisar_computador,
     obter_status_geral,
     analisar_processos,
+    agrupar_processos
 )
 
 
@@ -126,3 +127,23 @@ def test_status_geral_indisponivel_nao_vira_ok():
 def test_status_geral_critico_vence_indisponivel():
     analise = montar_analise(cpu="INDISPONÍVEL", disco="CRÍTICO")
     assert obter_status_geral(analise) == "CRÍTICO"
+
+def test_agrupar_processos_soma_pelo_nome():
+    processos = [
+        {"nome": "chrome.exe", "memoria": 3.0, "memoria_mb": 300.0},
+        {"nome": "code.exe", "memoria": 5.0, "memoria_mb": 500.0},
+        {"nome": "chrome.exe", "memoria": 4.0, "memoria_mb": 400.0},
+    ]
+
+    resultado = agrupar_processos(processos)
+
+    assert len(resultado) == 2
+    assert resultado[0]["nome"] == "chrome.exe"  # 7.0 vence 5.0
+    assert resultado[0]["quantidade"] == 2
+    assert resultado[0]["memoria"] == pytest.approx(7.0)
+    assert resultado[0]["memoria_mb"] == pytest.approx(700.0)
+    assert resultado[1]["nome"] == "code.exe"
+
+
+def test_agrupar_processos_lista_vazia():
+    assert agrupar_processos([]) == []

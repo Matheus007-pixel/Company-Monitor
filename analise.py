@@ -235,4 +235,26 @@ def analisar_historico(medicoes):
         "atencao": atencao,
         "ok": ok
     }
+def agrupar_processos(processos):
+    grupos = {}
 
+    for processo in processos:
+        nome = processo["nome"]
+
+        if nome not in grupos:
+            grupos[nome] = {
+                "nome": nome,
+                "memoria": 0,
+                "memoria_mb": 0,
+                "quantidade": 0
+            }
+
+        grupos[nome]["memoria"] += processo["memoria"]
+        grupos[nome]["memoria_mb"] += processo["memoria_mb"]
+        grupos[nome]["quantidade"] += 1
+
+    return sorted(
+        grupos.values(),
+        key=lambda grupo: grupo["memoria"],
+        reverse=True
+    )
