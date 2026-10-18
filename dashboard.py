@@ -150,7 +150,8 @@ with tab_historico:
         dados_grafico.append({
             "Data e hora": medicao["data_hora"],
             "CPU": float(medicao["cpu"]),
-            "RAM": float(medicao["ram"])
+            "RAM": float(medicao["ram"]),
+            "Disco": float(medicao["disco"])
         })
 
     if dados_grafico:
@@ -177,7 +178,32 @@ with tab_graficos:
         )
         df = df.set_index("Data e hora")
 
-        st.line_chart(df[["CPU", "RAM"]])
+        col_periodo, col_metricas = st.columns(2)
+
+        with col_periodo:
+            periodo = st.radio(
+                "Período",
+                ["Últimas 24 horas", "Últimos 7 dias", "Tudo"],
+                index=2,
+                horizontal=True
+            )
+
+        with col_metricas:
+            metricas = st.multiselect(
+                "Métricas",
+                ["CPU", "RAM", "Disco"],
+                default=["CPU", "RAM"]
+            )
+
+        if periodo == "Últimas 24 horas":
+            df = df[df.index >= datetime.now() - pd.Timedelta(hours=24)]
+        elif periodo == "Últimos 7 dias":
+            df = df[df.index >= datetime.now() - pd.Timedelta(days=7)]
+
+        if df.empty or not metricas:
+            st.info("Nenhuma medição para os filtros escolhidos.")
+        else:
+            st.line_chart(df[metricas])
 
         st.divider()
         st.subheader("Indicadores históricos")
