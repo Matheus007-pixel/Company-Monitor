@@ -99,12 +99,26 @@ def painel_processos():
     processos = dados["processos"]
 
     if processos:
-        for processo in processos:
-            st.write(
-                f"**{processo['nome']}** — "
-                f"{processo['memoria']:.2f}% de RAM "
-                f"({processo['memoria_mb']:.2f} MB)"
-            )
+        df = pd.DataFrame(processos)[["nome", "memoria", "memoria_mb"]]
+        df.columns = ["Processo", "RAM (%)", "RAM (MB)"]
+
+        st.dataframe(
+            df,
+            hide_index=True,
+            width="stretch",
+            column_config={
+                "RAM (%)": st.column_config.ProgressColumn(
+                    "RAM (%)",
+                    format="%.2f%%",
+                    min_value=0,
+                    max_value=float(df["RAM (%)"].max()),
+                ),
+                "RAM (MB)": st.column_config.NumberColumn(
+                    "RAM (MB)",
+                    format="%.1f"
+                ),
+            },
+        )
     else:
         st.info("Nenhum processo disponível para exibição.")
 
