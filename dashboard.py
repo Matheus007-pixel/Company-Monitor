@@ -4,7 +4,13 @@ import pandas as pd
 import streamlit as st
 import monitor
 
-from analise import analisar_computador, obter_status_geral, analisar_historico
+from analise import (
+    analisar_computador,
+    obter_status_geral,
+    analisar_historico,
+    analisar_processos,
+    agrupar_processos,
+)
 from historico import ler_historico, registrar_medicao
 
 
@@ -96,17 +102,30 @@ def painel_processos():
 
     st.subheader("Processos com maior consumo de RAM")
 
-    processos = dados["processos"]
+    processos = agrupar_processos(dados["processos"])
 
     if processos:
-        df = pd.DataFrame(processos)[["nome", "memoria", "memoria_mb"]]
-        df.columns = ["Processo", "RAM (%)", "RAM (MB)"]
+        resultado = analisar_processos(processos)
+        exibir_status(resultado["status"], resultado["mensagem"])
+
+        df = pd.DataFrame(processos)[
+            ["nome", "quantidade", "memoria", "memoria_mb"]
+        ]
+        df.columns = ["Processo", "Instâncias", "RAM (%)", "RAM (MB)"]
+
+        st.caption(
+            "Processos com o mesmo nome foram somados. "
+            "A lista considera os que mais consomem RAM."
+        )
 
         st.dataframe(
             df,
             hide_index=True,
             width="stretch",
             column_config={
+                "Instâncias": st.column_config.NumberColumn(
+                    "Instâncias", format="%d"
+                ),
                 "RAM (%)": st.column_config.ProgressColumn(
                     "RAM (%)",
                     format="%.2f%%",
