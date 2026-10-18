@@ -10,7 +10,9 @@ O projeto coleta métricas da máquina, classifica o estado dos recursos, identi
  
 * Python
 * Streamlit (dashboard web)
+* Pandas (gráficos e filtros do histórico)
 * psutil (coleta de dados do sistema)
+* pytest (testes automatizados)
 * CSV (histórico das medições)
 * Biblioteca padrão: `socket`, `pathlib`, `datetime`, `csv`
 ## Funcionalidades
@@ -24,6 +26,9 @@ O projeto coleta métricas da máquina, classifica o estado dos recursos, identi
 * Histórico de medições salvo em CSV
 * Indicadores históricos: médias, valores máximos, tendência de CPU e RAM e contagem de medições por estado
 * Dashboard web com diagnósticos coloridos por gravidade
+* Dashboard organizado em quatro abas: Resumo, Gráficos, Processos e Histórico
+* Atualização automática a cada 5 segundos, que pode ser pausada na barra lateral
+* Gráficos históricos de CPU, RAM e disco, com filtro de período e seleção de métricas
 * Registro manual de medições pelo dashboard
 ## Como executar
  
@@ -58,7 +63,14 @@ python main.py
 ```
  
 Execute os comandos na raiz do projeto, porque o histórico é salvo em `dados/historico.csv`.
- 
+ ## Testes
+
+O módulo de análise tem testes automatizados com pytest, cobrindo os limites de classificação, o status geral, os processos e o histórico.
+
+```bash
+python -m pip install pytest
+python -m pytest -v
+```
 ## Estrutura
  
 ```text
@@ -66,12 +78,17 @@ Company-Monitor/
 ├── dados/
 │   └── historico.csv   # Histórico das medições
 ├── docs/
+│   ├── dashboard.png   # Captura de tela do dashboard
 │   └── evolucao.md     # Evolução técnica e decisões
+├── tests/
+│   ├── test_analise.py            # Testes das funções de classificação
+│   └── test_analisar_historico.py # Testes dos indicadores históricos
 ├── analise.py          # Classificação e análise dos dados
 ├── dashboard.py        # Interface web com Streamlit
 ├── historico.py        # Leitura e gravação do histórico em CSV
 ├── main.py             # Execução no terminal
 ├── monitor.py          # Coleta dos dados do sistema
+├── pytest.ini          # Configuração do pytest
 ├── requirements.txt    # Dependências do projeto
 └── README.md           # Documentação principal
 ```
