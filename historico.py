@@ -5,6 +5,7 @@ from datetime import datetime
 ARQUIVO_HISTORICO = Path("dados/historico.csv")
 
 def registrar_medicao (informacoes, status_geral):
+    ARQUIVO_HISTORICO.parent.mkdir(exist_ok=True)
     arquivo_existe = ARQUIVO_HISTORICO.exists()
 
     with open(ARQUIVO_HISTORICO, "a", newline="", encoding="utf-8") as arquivo:

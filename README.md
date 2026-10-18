@@ -76,7 +76,7 @@ python -m pytest -v
 ```text
 Company-Monitor/
 ├── dados/
-│   └── historico.csv   # Histórico das medições
+│   └── historico.csv   # Histórico das medições (gerado ao usar o programa)
 ├── docs/
 │   ├── dashboard.png   # Captura de tela do dashboard
 │   └── evolucao.md     # Evolução técnica e decisões
