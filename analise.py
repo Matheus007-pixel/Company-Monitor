@@ -136,14 +136,15 @@ def analisar_historico(medicoes):
     if not medicoes:
         return {
             "quantidade": 0,
-            "cpu_media":0,
+            "cpu_media": 0,
             "ram_media": 0,
             "maior_cpu": 0,
             "maior_ram": 0,
+            "tendencia_cpu": "DADOS INSUFICIENTES",
+            "tendencia_ram": "DADOS INSUFICIENTES",
             "criticos": 0,
             "atencao": 0,
             "ok": 0
-
         }
     cpus = []
     rams = []
