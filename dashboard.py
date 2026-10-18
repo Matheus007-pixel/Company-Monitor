@@ -201,6 +201,18 @@ with tab_historico:
 
         df_hist = pd.DataFrame(list(reversed(medicoes[-10:])))
 
+        csv_historico = pd.DataFrame(medicoes).to_csv(
+            index=False, sep=";"
+        ).encode("utf-8-sig")
+
+        st.download_button(
+            "Baixar histórico completo (CSV)",
+            data=csv_historico,
+            file_name="historico_company_monitor.csv",
+            mime="text/csv"
+        )
+
+
         for coluna in ["cpu", "ram", "disco"]:
             df_hist[coluna] = pd.to_numeric(df_hist[coluna], errors="coerce")
 
