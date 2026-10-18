@@ -128,6 +128,7 @@ Spotify.exe - 3.56% - 282.45 MB
 * [x] Dashboard web
 * [x] Indicadores históricos e tendências
 * [x] Gráficos históricos de CPU e RAM
+* [x] Testes automatizados com pytest
 * [ ] Diagnóstico avançado dos processos
 * [ ] Banco de dados
 * [ ] API com FastAPI
