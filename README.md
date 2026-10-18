@@ -22,7 +22,7 @@ O projeto coleta métricas da máquina, classifica o estado dos recursos, identi
 * Identificação do sistema operacional, nome do computador e uptime
 * Classificação dos recursos em `OK`, `ATENÇÃO`, `CRÍTICO` e `INDISPONÍVEL`
 * Definição do status geral da máquina
-* Identificação dos processos com maior consumo de RAM, em porcentagem e MB
+* Identificação dos processos com maior consumo de RAM, em porcentagem e MB, somando as instâncias do mesmo programa
 * Histórico de medições salvo em CSV
 * Indicadores históricos: médias, valores máximos, tendência de CPU e RAM e contagem de medições por estado
 * Dashboard web com diagnósticos coloridos por gravidade
@@ -30,6 +30,10 @@ O projeto coleta métricas da máquina, classifica o estado dos recursos, identi
 * Atualização automática a cada 5 segundos, que pode ser pausada na barra lateral
 * Gráficos históricos de CPU, RAM e disco, com filtro de período e seleção de métricas
 * Registro manual de medições pelo dashboard
+* Tabelas com barras de progresso nas abas Processos e Histórico
+* Faixa de status colorida com o diagnóstico dos processos
+* Download do histórico completo em CSV, com abertura direta no Excel
+
 ## Como executar
  
 Requisitos: Python 3 instalado.
@@ -128,6 +132,8 @@ Spotify.exe - 3.56% - 282.45 MB
 * [x] Dashboard web
 * [x] Indicadores históricos e tendências
 * [x] Gráficos históricos de CPU e RAM
+* [x] Testes automatizados com pytest
+* [x] Agrupamento de processos por nome
 * [x] Testes automatizados com pytest
 * [ ] Diagnóstico avançado dos processos
 * [ ] Banco de dados
