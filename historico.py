@@ -1,47 +1,86 @@
-import csv
-from pathlib import Path
+import os
 from datetime import datetime
 
-ARQUIVO_HISTORICO = Path("dados/historico.csv")
+import psycopg
 
-def registrar_medicao (informacoes, status_geral):
-    ARQUIVO_HISTORICO.parent.mkdir(exist_ok=True)
-    arquivo_existe = ARQUIVO_HISTORICO.exists()
+COLUNAS = [
+    "data_hora",
+    "computador",
+    "cpu",
+    "ram",
+    "disco",
+    "internet",
+    "status_geral",
+]
 
-    with open(ARQUIVO_HISTORICO, "a", newline="", encoding="utf-8") as arquivo:
-        escritor = csv.writer(arquivo)
+FORMATO_DATA = "%d/%m/%Y %H:%M:%S"
 
-        if not arquivo_existe:
-            escritor.writerow([
-                "data_hora",
-                "computador",
-                "cpu",
-                "ram",
-                "disco",
-                "internet",
-                "status_geral"
-            ])
 
-        escritor.writerow([
-            datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            informacoes["computador"],
-            informacoes["cpu"],
-            informacoes["ram"],
-            informacoes["disco"],
-            informacoes["internet"],
-            status_geral
-        ])
+def _conectar():
+    senha = os.environ.get("DB_PASSWORD")
+    if not senha:
+        raise RuntimeError("Variável de ambiente DB_PASSWORD não definida.")
+
+    return psycopg.connect(
+        host=os.environ.get("DB_HOST", "localhost"),
+        port=os.environ.get("DB_PORT", "5432"),
+        dbname=os.environ.get("DB_NAME", "company_monitor"),
+        user=os.environ.get("DB_USER", "monitor_app"),
+        password=senha,
+    )
+
+
+def _criar_tabela(conexao):
+    conexao.execute("""
+        CREATE TABLE IF NOT EXISTS historico (
+            id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            data_hora TIMESTAMP NOT NULL,
+            computador TEXT NOT NULL,
+            cpu TEXT NOT NULL,
+            ram TEXT NOT NULL,
+            disco TEXT NOT NULL,
+            internet TEXT NOT NULL,
+            status_geral TEXT NOT NULL
+        )
+    """)
+
+
+def registrar_medicao(informacoes, status_geral):
+    with _conectar() as conexao:
+        _criar_tabela(conexao)
+        conexao.execute(
+            """
+            INSERT INTO historico
+                (data_hora, computador, cpu, ram, disco, internet, status_geral)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+            (
+                datetime.now(),
+                str(informacoes["computador"]),
+                str(informacoes["cpu"]),
+                str(informacoes["ram"]),
+                str(informacoes["disco"]),
+                str(informacoes["internet"]),
+                status_geral,
+            ),
+        )
+
 
 def ler_historico():
-    if not ARQUIVO_HISTORICO.exists():
-        return []
+    with _conectar() as conexao:
+        _criar_tabela(conexao)
+        linhas = conexao.execute(
+            """
+            SELECT data_hora, computador, cpu, ram, disco, internet, status_geral
+            FROM historico
+            ORDER BY id
+            """
+        ).fetchall()
 
     medicoes = []
-
-    with open(ARQUIVO_HISTORICO, "r", newline="", encoding="utf-8") as arquivo:
-        leitor = csv.DictReader(arquivo)
-
-        for linha in leitor:
-            medicoes.append(linha)
+    for linha in linhas:
+        medicao = dict(zip(COLUNAS, linha))
+        medicao["data_hora"] = medicao["data_hora"].strftime(FORMATO_DATA)
+        medicoes.append(medicao)
 
     return medicoes
