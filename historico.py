@@ -2,7 +2,9 @@ import os
 from datetime import datetime
 
 import psycopg
+from dotenv import load_dotenv
 
+load_dotenv()
 COLUNAS = [
     "data_hora",
     "computador",
@@ -73,7 +75,7 @@ def ler_historico():
             """
             SELECT data_hora, computador, cpu, ram, disco, internet, status_geral
             FROM historico
-            ORDER BY id
+            ORDER BY data_hora, id
             """
         ).fetchall()
 

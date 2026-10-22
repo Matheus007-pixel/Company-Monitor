@@ -15,3 +15,5 @@ __pycache__/
 
 # Dados gerados ao usar o programa
 dados/historico.csv
+
+.env
