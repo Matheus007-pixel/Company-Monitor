@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
-from analise import analisar_computador, obter_status_geral
+from analise import analisar_computador, analisar_processos, obter_status_geral
 from historico import ler_historico
-from monitor import coletar_informacoes
+from monitor import coletar_informacoes, obter_processos
 
 app = FastAPI(title="Company Monitor API")
 
@@ -37,3 +37,7 @@ def status():
         "analise": analise,
         "status_geral": obter_status_geral(analise),
     }
+
+@app.get("/processos")
+def processos():
+    return analisar_processos(obter_processos())
