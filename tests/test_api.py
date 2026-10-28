@@ -53,3 +53,27 @@ def test_processos(monkeypatch):
     assert "chrome.exe" in dados["mensagem"]
     assert len(dados["processos"]) == 2
     assert dados["processos"][0]["nome"] == "chrome.exe"
+
+def test_historico(monkeypatch):
+    def historico_falso():
+        return [
+            {
+                "data_hora": "25/10/2026 20:00:00",
+                "computador": "PC-TESTE",
+                "cpu": "50.0",
+                "ram": "60.0",
+                "disco": "40.0",
+                "internet": "True",
+                "status_geral": "OK",
+            }
+        ]
+
+    monkeypatch.setattr(api, "ler_historico", historico_falso)
+
+    resposta = client.get("/historico")
+    dados = resposta.json()
+
+    assert resposta.status_code == 200
+    assert len(dados) == 1
+    assert dados[0]["computador"] == "PC-TESTE"
+    assert dados[0]["status_geral"] == "OK"
