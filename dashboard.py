@@ -17,7 +17,7 @@ from historico import ler_historico, registrar_medicao
 INTERVALO_ATUALIZACAO = 5  # segundos
 
 st.set_page_config(
-    page_title="Company Monitor",
+    page_title="Sentinela",
     page_icon="🖥️",
     layout="wide"
 )
@@ -145,7 +145,7 @@ def painel_processos():
         st.json(dados)
 
 
-st.title("🖥️ Company Monitor")
+st.title("🖥️ Sentinela")
 st.caption("Monitoramento e análise de desempenho do computador")
 
 atualizar = st.sidebar.toggle("Atualização automática", value=True)
