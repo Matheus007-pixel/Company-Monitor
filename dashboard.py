@@ -18,7 +18,7 @@ INTERVALO_ATUALIZACAO = 5  # segundos
 
 st.set_page_config(
     page_title="Sentinela",
-    page_icon="🖥️",
+    page_icon=":material/shield:",
     layout="wide"
 )
 
@@ -145,13 +145,51 @@ def painel_processos():
         st.json(dados)
 
 
-st.title("🖥️ Sentinela")
-st.caption("Monitoramento e análise de desempenho do computador")
+CORES_STATUS = {
+    "OK": "#00D4AA",
+    "ATENÇÃO": "#F5B942",
+    "CRÍTICO": "#FF5C5C",
+    "INDISPONÍVEL": "#8A94A6",
+}
+
+
+def cabecalho():
+    dados, _, status_geral = obter_diagnostico()
+    cor = CORES_STATUS.get(status_geral, CORES_STATUS["INDISPONÍVEL"])
+    hora = datetime.now().strftime("%H:%M:%S")
+
+    html = (
+        '<div style="display:flex;justify-content:space-between;'
+        'align-items:center;padding-bottom:14px;margin-bottom:8px;'
+        'border-bottom:1px solid #1E2A44;">'
+        '<div>'
+        '<div style="font-size:1.7rem;font-weight:700;'
+        'letter-spacing:0.22em;">SENTINELA</div>'
+        '<div style="font-size:0.85rem;color:#8A94A6;margin-top:2px;">'
+        f'Monitoramento de desempenho &middot; {dados["computador"]}'
+        '</div>'
+        '</div>'
+        '<div style="text-align:right;">'
+        f'<div style="display:inline-block;padding:4px 14px;'
+        f'border-radius:999px;border:1px solid {cor};'
+        f'background:{cor}22;color:{cor};font-weight:600;'
+        f'font-size:0.85rem;letter-spacing:0.08em;">'
+        f'&#9679; {status_geral}</div>'
+        '<div style="font-size:0.75rem;color:#8A94A6;margin-top:6px;">'
+        f'Atualizado às {hora}</div>'
+        '</div>'
+        '</div>'
+    )
+
+    st.markdown(html, unsafe_allow_html=True)
+
 
 atualizar = st.sidebar.toggle("Atualização automática", value=True)
 st.sidebar.caption(f"Atualiza a cada {INTERVALO_ATUALIZACAO} segundos")
 
 intervalo = INTERVALO_ATUALIZACAO if atualizar else None
+
+st.fragment(cabecalho, run_every=intervalo)()
 
 tab_resumo, tab_graficos, tab_processos, tab_historico = st.tabs([
     "Resumo",
