@@ -50,7 +50,7 @@ def coletar_informacoes():
         "processos": obter_processos()
     }
 
-    return informacoes
+
 
 def obter_uptime():
     inicio = psutil.boot_time()
