@@ -57,44 +57,33 @@ def obter_diagnostico():
 
 
 def painel_resumo():
-    dados, analise, status_geral = obter_diagnostico()
+    dados, analise, _ = obter_diagnostico()
 
-    st.subheader("Desempenho em tempo real")
+    st.subheader("Visão geral")
 
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric("CPU", f"{dados['cpu']}%")
-
-    with col2:
-        st.metric("RAM", f"{dados['ram']}%")
-
-    with col3:
-        st.metric("Disco", f"{dados['disco']}%")
-
-    st.divider()
-
-    st.subheader("Diagnóstico do computador")
-
-    exibir_status(status_geral, f"**Status geral: {status_geral}**")
+    def percentual(valor):
+        return f"{valor}%" if valor is not None else "—"
 
     col_cpu, col_ram, col_disco, col_internet = st.columns(4)
 
-    for coluna, recurso in [
-        (col_cpu, "cpu"),
-        (col_ram, "ram"),
-        (col_disco, "disco"),
-        (col_internet, "internet")
+    for coluna, titulo, valor, recurso in [
+        (col_cpu, "CPU", percentual(dados["cpu"]), "cpu"),
+        (col_ram, "RAM", percentual(dados["ram"]), "ram"),
+        (col_disco, "DISCO", percentual(dados["disco"]), "disco"),
+        (
+            col_internet,
+            "INTERNET",
+            "Online" if dados["internet"] else "Offline",
+            "internet",
+        ),
     ]:
         with coluna:
-            st.markdown(f"**{recurso.upper()}**")
-            exibir_status(
+            cartao(
+                titulo,
+                valor,
                 analise[recurso]["status"],
-                analise[recurso]["status"]
+                analise[recurso]["mensagem"],
             )
-            st.caption(analise[recurso]["mensagem"])
-
-    st.caption(f"Última atualização: {datetime.now().strftime('%H:%M:%S')}")
 
 
 def painel_processos():
@@ -178,6 +167,28 @@ def cabecalho():
         '<div style="font-size:0.75rem;color:#8A94A6;margin-top:6px;">'
         f'Atualizado às {hora}</div>'
         '</div>'
+        '</div>'
+    )
+
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def cartao(titulo, valor, status, mensagem):
+    cor = CORES_STATUS.get(status, CORES_STATUS["INDISPONÍVEL"])
+
+    html = (
+        '<div style="background:#111A2E;border:1px solid #1E2A44;'
+        f'border-top:3px solid {cor};border-radius:10px;padding:16px 18px;">'
+        '<div style="font-size:0.75rem;color:#8A94A6;'
+        f'letter-spacing:0.12em;">{titulo}</div>'
+        '<div style="font-size:2rem;font-weight:700;margin:4px 0 8px;">'
+        f'{valor}</div>'
+        '<div style="display:inline-block;padding:2px 10px;'
+        f'border-radius:999px;border:1px solid {cor};'
+        f'background:{cor}22;color:{cor};font-size:0.75rem;'
+        f'font-weight:600;letter-spacing:0.08em;">{status}</div>'
+        '<div style="font-size:0.8rem;color:#8A94A6;margin-top:8px;">'
+        f'{mensagem}</div>'
         '</div>'
     )
 
