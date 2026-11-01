@@ -1,4 +1,5 @@
 from datetime import datetime
+from html import escape
 
 import altair as alt
 import pandas as pd
@@ -22,17 +23,6 @@ st.set_page_config(
     page_icon=":material/shield:",
     layout="wide"
 )
-
-
-def exibir_status(status, texto):
-    if status == "OK":
-        st.success(texto)
-    elif status == "ATENÇÃO":
-        st.warning(texto)
-    elif status == "CRÍTICO":
-        st.error(texto)
-    else:
-        st.info(texto)
 
 
 @st.cache_data(ttl=4)
@@ -90,13 +80,13 @@ def painel_resumo():
 def painel_processos():
     dados, _, _ = obter_diagnostico()
 
-    st.subheader("Processos com maior consumo de RAM")
+    st.subheader("Maiores consumidores de RAM")
 
     processos = dados["processos"]
 
     if processos:
         resultado = analisar_processos(processos)
-        exibir_status(resultado["status"], resultado["mensagem"])
+        faixa_status(resultado["status"], resultado["mensagem"])
 
         df = pd.DataFrame(processos)[
             ["nome", "quantidade", "memoria", "memoria_mb"]
@@ -130,9 +120,6 @@ def painel_processos():
         )
     else:
         st.info("Nenhum processo disponível para exibição.")
-
-    with st.expander("Dados brutos (depuração)"):
-        st.json(dados)
 
 
 CORES_STATUS = {
@@ -218,6 +205,25 @@ def indicador(titulo, valor, cor="#2A3A5C"):
         f'letter-spacing:0.12em;">{titulo.upper()}</div>'
         '<div style="font-size:1.5rem;font-weight:700;margin-top:2px;">'
         f'{valor}</div>'
+        '</div>'
+    )
+
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def faixa_status(status, mensagem):
+    cor = CORES_STATUS.get(status, CORES_STATUS["INDISPONÍVEL"])
+
+    html = (
+        '<div style="background:#111A2E;border:1px solid #1E2A44;'
+        f'border-left:3px solid {cor};border-radius:10px;'
+        'padding:12px 16px;margin-bottom:12px;display:flex;'
+        'align-items:center;gap:14px;">'
+        '<div style="display:inline-block;padding:2px 10px;'
+        f'border-radius:999px;border:1px solid {cor};'
+        f'background:{cor}22;color:{cor};font-size:0.75rem;'
+        f'font-weight:600;letter-spacing:0.08em;">{status}</div>'
+        f'<div style="font-size:0.9rem;">{escape(mensagem)}</div>'
         '</div>'
     )
 
