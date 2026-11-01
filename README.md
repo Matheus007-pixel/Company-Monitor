@@ -2,7 +2,7 @@
 
 Aplicação de monitoramento e análise de desempenho de computadores, desenvolvida em Python para Windows.
 
-O projeto coleta métricas da máquina, classifica o estado dos recursos, identifica os processos que mais consomem memória, guarda um histórico das medições em um banco PostgreSQL e apresenta tudo em um dashboard web feito com Streamlit. Os dados também ficam disponíveis por uma API REST com FastAPI. Também pode ser executado no terminal.
+O projeto coleta métricas da máquina, classifica o estado dos recursos, identifica os processos que mais consomem memória, guarda um histórico das medições em um banco PostgreSQL e apresenta tudo em um dashboard web com tema escuro feito com Streamlit. Os dados também ficam disponíveis por uma API REST com FastAPI. Também pode ser executado no terminal.
 
 ![Dashboard do Company Monitor](docs/dashboard.png)
 
@@ -10,6 +10,7 @@ O projeto coleta métricas da máquina, classifica o estado dos recursos, identi
 
 * Python
 * Streamlit (dashboard web)
+* Altair (gráficos do dashboard)
 * FastAPI (API REST)
 * PostgreSQL com psycopg (histórico das medições)
 * python-dotenv (configuração por variáveis de ambiente)
@@ -28,12 +29,14 @@ O projeto coleta métricas da máquina, classifica o estado dos recursos, identi
 * Identificação dos processos com maior consumo de RAM, em porcentagem e MB, somando as instâncias do mesmo programa
 * Histórico de medições salvo em PostgreSQL
 * Indicadores históricos: médias, valores máximos, tendência de CPU e RAM e contagem de medições por estado
-* Dashboard web com diagnósticos coloridos por gravidade
+* Dashboard web com tema escuro e diagnósticos coloridos por gravidade
+* Cabeçalho com selo do status geral da máquina
 * Dashboard organizado em quatro abas: Resumo, Gráficos, Processos e Histórico
+* Cartões de status por recurso na aba Resumo
 * Atualização automática a cada 5 segundos, que pode ser pausada na barra lateral
-* Gráficos históricos de CPU, RAM e disco, com filtro de período e seleção de métricas
+* Gráficos históricos de CPU, RAM e disco, com filtro de período, seleção de métricas e cartões de indicadores
 * Registro manual de medições pelo dashboard
-* Tabelas com barras de progresso nas abas Processos e Histórico
+* Tabelas com barras de progresso nas abas Processos e Histórico, com status colorido no histórico
 * Faixa de status colorida com o diagnóstico dos processos
 * Download do histórico completo em CSV, com abertura direta no Excel
 * API REST com endpoints de saúde, status atual, processos e histórico, com documentação automática em `/docs`
@@ -137,6 +140,8 @@ Os testes de banco usam o `company_monitor_test`, com uma trava que confere o no
 
 ```text
 Company-Monitor/
+├── .streamlit/
+│   └── config.toml     # Tema escuro do dashboard
 ├── dados/
 │   └── historico.csv   # Histórico antigo em CSV (usado só na migração, se existir)
 ├── docs/
@@ -200,6 +205,7 @@ Spotify.exe - 3.56% - 282.45 MB
 * [x] Banco de dados PostgreSQL
 * [x] API com FastAPI
 * [x] Testes da API
+* [x] Refino visual do dashboard (tema escuro, cartões e selo de status)
 * [ ] Refinar os tipos das colunas do banco (numéricos e booleano)
 * [ ] Diagnóstico avançado dos processos
 * [ ] Docker (docker-compose para o banco)
