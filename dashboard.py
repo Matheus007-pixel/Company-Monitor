@@ -195,6 +195,15 @@ def cartao(titulo, valor, status, mensagem):
     st.markdown(html, unsafe_allow_html=True)
 
 
+def colorir_status(status):
+    cor = CORES_STATUS.get(status)
+
+    if cor is None:
+        return ""
+
+    return f"color: {cor}; font-weight: 600;"
+
+
 atualizar = st.sidebar.toggle("Atualização automática", value=True)
 st.sidebar.caption(f"Atualiza a cada {INTERVALO_ATUALIZACAO} segundos")
 
@@ -215,18 +224,22 @@ with tab_resumo:
 
 # --- Aba Histórico ---
 # Fica antes da aba Gráficos no código para que o botão registre a medição
-# antes de o gráfico ler o CSV. Na tela, a ordem das abas continua a mesma.
+# antes de o gráfico ler o histórico. Na tela, a ordem das abas continua
+# a mesma.
 with tab_historico:
     st.subheader("Histórico de desempenho")
 
-    if st.button("Registrar medição no histórico", type="primary"):
-        dados, _, status_geral = obter_diagnostico()
-        registrar_medicao(dados, status_geral)
-        st.success("Medição registrada.")
+    col_registrar, col_baixar, _ = st.columns([1, 1, 3])
+
+    with col_registrar:
+        if st.button("Registrar medição", icon=":material/add:"):
+            dados, _, status_geral = obter_diagnostico()
+            registrar_medicao(dados, status_geral)
+            st.toast("Medição registrada.", icon=":material/check_circle:")
 
     medicoes = ler_historico()
 
-    # Usado pela aba Gráficos. Linhas corrompidas no CSV são ignoradas.
+    # Usado pela aba Gráficos. Linhas corrompidas no histórico são ignoradas.
     dados_grafico = []
 
     for medicao in medicoes:
@@ -241,8 +254,6 @@ with tab_historico:
             continue
 
     if medicoes:
-        icones = {"OK": "🟢", "ATENÇÃO": "🟡", "CRÍTICO": "🔴"}
-
         st.caption(
             f"{len(medicoes)} medições registradas. "
             "Abaixo, as 10 mais recentes, da mais recente para a mais antiga."
@@ -254,22 +265,20 @@ with tab_historico:
             index=False, sep=";"
         ).encode("utf-8-sig")
 
-        st.download_button(
-            "Baixar histórico completo (CSV)",
-            data=csv_historico,
-            file_name="historico_company_monitor.csv",
-            mime="text/csv"
-        )
-
+        with col_baixar:
+            st.download_button(
+                "Baixar CSV",
+                data=csv_historico,
+                file_name="historico_sentinela.csv",
+                mime="text/csv",
+                icon=":material/download:"
+            )
 
         for coluna in ["cpu", "ram", "disco"]:
             df_hist[coluna] = pd.to_numeric(df_hist[coluna], errors="coerce")
 
         df_hist["internet"] = df_hist["internet"].map(
             {"True": "Online", "False": "Offline"}
-        )
-        df_hist["status_geral"] = df_hist["status_geral"].map(
-            lambda s: f"{icones.get(s, '⚪')} {s}"
         )
 
         df_hist = df_hist[[
@@ -279,8 +288,10 @@ with tab_historico:
             "Data e hora", "CPU", "RAM", "Disco", "Internet", "Status"
         ]
 
+        estilo = df_hist.style.map(colorir_status, subset=["Status"])
+
         st.dataframe(
-            df_hist,
+            estilo,
             hide_index=True,
             width="stretch",
             column_config={
