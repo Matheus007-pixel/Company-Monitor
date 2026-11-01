@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import altair as alt
 import pandas as pd
 import streamlit as st
 import monitor
@@ -141,6 +142,19 @@ CORES_STATUS = {
     "INDISPONÍVEL": "#8A94A6",
 }
 
+CORES_METRICAS = {
+    "CPU": "#00D4AA",
+    "RAM": "#F5B942",
+    "Disco": "#4C9AFF",
+}
+
+CORES_TENDENCIA = {
+    "PIORANDO": "#FF5C5C",
+    "MELHORANDO": "#00D4AA",
+    "ESTÁVEL": "#8A94A6",
+    "DADOS INSUFICIENTES": "#8A94A6",
+}
+
 
 def cabecalho():
     dados, _, status_geral = obter_diagnostico()
@@ -189,6 +203,21 @@ def cartao(titulo, valor, status, mensagem):
         f'font-weight:600;letter-spacing:0.08em;">{status}</div>'
         '<div style="font-size:0.8rem;color:#8A94A6;margin-top:8px;">'
         f'{mensagem}</div>'
+        '</div>'
+    )
+
+    st.markdown(html, unsafe_allow_html=True)
+
+
+def indicador(titulo, valor, cor="#2A3A5C"):
+    html = (
+        '<div style="background:#111A2E;border:1px solid #1E2A44;'
+        f'border-left:3px solid {cor};border-radius:10px;'
+        'padding:12px 16px;margin-bottom:12px;">'
+        '<div style="font-size:0.72rem;color:#8A94A6;'
+        f'letter-spacing:0.12em;">{titulo.upper()}</div>'
+        '<div style="font-size:1.5rem;font-weight:700;margin-top:2px;">'
+        f'{valor}</div>'
         '</div>'
     )
 
@@ -311,7 +340,7 @@ with tab_historico:
 
 # --- Aba Gráficos ---
 with tab_graficos:
-    st.subheader("Evolução de CPU e RAM")
+    st.subheader("Evolução do uso de recursos")
 
     if dados_grafico:
         df = pd.DataFrame(dados_grafico)
@@ -346,24 +375,86 @@ with tab_graficos:
         if df.empty or not metricas:
             st.info("Nenhuma medição para os filtros escolhidos.")
         else:
-            st.line_chart(df[metricas])
+            df_longo = (
+                df[metricas]
+                .reset_index()
+                .melt(
+                    id_vars="Data e hora",
+                    var_name="Métrica",
+                    value_name="Uso (%)"
+                )
+            )
+
+            grafico = (
+                alt.Chart(df_longo)
+                .mark_line(strokeWidth=2.5, point=True)
+                .encode(
+                    x=alt.X("Data e hora:T", title=None),
+                    y=alt.Y(
+                        "Uso (%):Q",
+                        title="Uso (%)",
+                        scale=alt.Scale(domain=[0, 100])
+                    ),
+                    color=alt.Color(
+                        "Métrica:N",
+                        scale=alt.Scale(
+                            domain=metricas,
+                            range=[CORES_METRICAS[m] for m in metricas]
+                        ),
+                        legend=alt.Legend(orient="top", title=None)
+                    ),
+                    tooltip=[
+                        alt.Tooltip(
+                            "Data e hora:T",
+                            title="Data e hora",
+                            format="%d/%m/%Y %H:%M:%S"
+                        ),
+                        alt.Tooltip("Métrica:N", title="Métrica"),
+                        alt.Tooltip("Uso (%):Q", title="Uso (%)", format=".1f"),
+                    ],
+                )
+                .properties(height=320)
+            )
+
+            st.altair_chart(grafico, width="stretch")
 
         st.divider()
         st.subheader("Indicadores históricos")
 
         resumo = analisar_historico(medicoes)
 
-        h1, h2, h3, h4 = st.columns(4)
-        h1.metric("Medições", resumo["quantidade"])
-        h2.metric("CPU média", f"{resumo['cpu_media']:.1f}%")
-        h3.metric("RAM média", f"{resumo['ram_media']:.1f}%")
-        h4.metric("Críticas", resumo["criticos"])
+        linha1 = st.columns(4)
+        linha2 = st.columns(4)
 
-        h5, h6, h7, h8 = st.columns(4)
-        h5.metric("Maior CPU", f"{resumo['maior_cpu']:.1f}%")
-        h6.metric("Maior RAM", f"{resumo['maior_ram']:.1f}%")
-        h7.metric("Tendência CPU", resumo["tendencia_cpu"])
-        h8.metric("Tendência RAM", resumo["tendencia_ram"])
+        with linha1[0]:
+            indicador("Medições", resumo["quantidade"])
+        with linha1[1]:
+            indicador("CPU média", f"{resumo['cpu_media']:.1f}%")
+        with linha1[2]:
+            indicador("RAM média", f"{resumo['ram_media']:.1f}%")
+        with linha1[3]:
+            indicador(
+                "Críticas",
+                resumo["criticos"],
+                CORES_STATUS["CRÍTICO"] if resumo["criticos"] else "#2A3A5C"
+            )
+
+        with linha2[0]:
+            indicador("Maior CPU", f"{resumo['maior_cpu']:.1f}%")
+        with linha2[1]:
+            indicador("Maior RAM", f"{resumo['maior_ram']:.1f}%")
+        with linha2[2]:
+            indicador(
+                "Tendência CPU",
+                resumo["tendencia_cpu"].capitalize(),
+                CORES_TENDENCIA.get(resumo["tendencia_cpu"], "#2A3A5C")
+            )
+        with linha2[3]:
+            indicador(
+                "Tendência RAM",
+                resumo["tendencia_ram"].capitalize(),
+                CORES_TENDENCIA.get(resumo["tendencia_ram"], "#2A3A5C")
+            )
     else:
         st.info("Ainda não existem medições no histórico.")
 
