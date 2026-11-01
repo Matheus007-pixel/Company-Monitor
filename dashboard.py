@@ -25,7 +25,7 @@ st.set_page_config(
 )
 
 
-@st.cache_data(ttl=4)
+@st.cache_data(ttl=4, show_spinner=False)
 def coletar_dados():
     # O cache de 4 segundos evita coletar duas vezes quando mais de um
     # trecho da página pede os dados quase ao mesmo tempo.
