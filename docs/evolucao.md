@@ -176,6 +176,27 @@ Neste ponto o projeto tem 62 testes passando.
 
 ---
 
+## Fase 9 — Refino visual do dashboard
+
+Com as funcionalidades principais prontas, o dashboard recebeu uma identidade visual própria, em alterações pequenas e testadas uma a uma.
+
+O que mudou:
+
+* **Tema escuro.** Definido em `.streamlit/config.toml`, o que mantém as cores do tema fora do código do dashboard.
+* **Cabeçalho com selo de status.** O status geral da máquina aparece logo no topo, com cor de acordo com a gravidade.
+* **Aba Resumo.** Os recursos passaram a ser exibidos em cartões de status.
+* **Aba Gráficos.** Os gráficos foram refeitos com Altair, que acompanha o Streamlit, e ganharam cartões de indicadores.
+* **Aba Histórico.** Status colorido na tabela e botões mais discretos.
+* **Aba Processos.** Faixa de status com o diagnóstico e remoção dos dados de depuração.
+
+Decisões tomadas:
+
+* **Cache curto na coleta.** A coleta usa `@st.cache_data(ttl=4, show_spinner=False)`. O tempo de 4 segundos é menor que o intervalo de atualização (5 segundos), então os dados continuam frescos, mas várias partes da tela reaproveitam a mesma coleta em vez de repeti-la.
+* **Sem mudar a lógica.** O refino foi só de apresentação. `monitor.py`, `analise.py` e `historico.py` não foram alterados, e os 62 testes continuaram passando.
+* **Limpeza de código.** Foi removido um `return` inalcançável de `coletar_informacoes()`.
+
+---
+
 ## Fase atual
 
 O projeto atualmente possui:
@@ -184,7 +205,7 @@ O projeto atualmente possui:
 * Análise dos principais recursos e status geral da máquina
 * Monitoramento e agrupamento dos processos por consumo de RAM
 * Histórico em PostgreSQL, com indicadores e tendências
-* Dashboard web com quatro abas
+* Dashboard web com tema escuro e quatro abas
 * API REST com quatro endpoints
 * 62 testes automatizados
 
@@ -192,12 +213,11 @@ O projeto atualmente possui:
 
 ## Próximas etapas
 
-1. Refinar o visual do dashboard (tema escuro e identidade própria)
-2. Refinar os tipos das colunas do banco (numéricos e booleano)
-3. docker-compose para subir o banco
-4. Diagnóstico avançado dos processos
-5. Monitoramento de processos com alto consumo de CPU
-6. Suporte ao monitoramento de múltiplas máquinas
-7. Deploy em cloud
+1. Refinar os tipos das colunas do banco (numéricos e booleano)
+2. docker-compose para subir o banco
+3. Diagnóstico avançado dos processos
+4. Monitoramento de processos com alto consumo de CPU
+5. Suporte ao monitoramento de múltiplas máquinas
+6. Deploy em cloud
 
 O objetivo final é transformar o protótipo local em uma solução de monitoramento capaz de acompanhar múltiplos computadores e disponibilizar os dados por meio de uma aplicação web.
