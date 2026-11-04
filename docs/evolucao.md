@@ -197,6 +197,29 @@ Decisões tomadas:
 
 ---
 
+## Fase 10 — Banco PostgreSQL em Docker
+
+Para que qualquer pessoa consiga rodar o projeto sem instalar e configurar o PostgreSQL manualmente, o banco passou a poder ser executado em um container, descrito em um arquivo `docker-compose.yml`.
+
+O que foi criado:
+
+* **`docker-compose.yml`.** Define um serviço com a imagem `postgres:18`, o mesmo major do banco que já era usado, com usuário `monitor_app` e banco `company_monitor`.
+* **`docker/init/01-criar-banco-teste.sql`.** Script executado apenas na primeira criação do volume, que cria o `company_monitor_test` para os testes.
+* **Volume `pgdata`.** Guarda os dados fora do container, então parar ou recriar o container não apaga o histórico.
+
+Decisões tomadas:
+
+* **Docker só para o banco.** O dashboard, a API e o monitor continuam rodando direto no Windows. O monitor precisa ler CPU, RAM e processos da máquina real, e dentro de um container ele enxergaria o container, não o computador.
+* **Senha fora do arquivo.** O `docker-compose.yml` lê `DB_PASSWORD` do `.env`, o mesmo usado pelo Python, e falha com uma mensagem clara se a variável não estiver definida. Nenhuma senha foi escrita no repositório.
+* **Porta 5433.** O container é publicado na porta 5433 do computador para não conflitar com um PostgreSQL já instalado, que normalmente usa a 5432. O projeto passou a usar o banco do Docker apenas com `DB_PORT=5433` no `.env`, sem nenhuma alteração no código Python.
+* **Migração sem perda.** O histórico existente foi levado para o container com backup (`pg_dump`) e restauração. A contagem de registros foi conferida antes e depois (29 em ambos). O banco antigo só foi lido, nunca alterado, então serviu de rede de segurança durante todo o processo.
+* **Prova de que o projeto usa o novo banco.** Uma medição nova registrada pelo dashboard levou o banco do Docker a 30 registros, enquanto o antigo permaneceu em 29.
+* **Backup fora do repositório.** O arquivo de backup foi salvo fora da pasta do projeto, para não ir parar no GitHub por engano.
+
+Os 62 testes continuaram passando, agora executados contra o `company_monitor_test` dentro do container.
+
+---
+
 ## Fase atual
 
 O projeto atualmente possui:
@@ -205,6 +228,7 @@ O projeto atualmente possui:
 * Análise dos principais recursos e status geral da máquina
 * Monitoramento e agrupamento dos processos por consumo de RAM
 * Histórico em PostgreSQL, com indicadores e tendências
+* Banco PostgreSQL executável em Docker, com um comando
 * Dashboard web com tema escuro e quatro abas
 * API REST com quatro endpoints
 * 62 testes automatizados
@@ -214,10 +238,9 @@ O projeto atualmente possui:
 ## Próximas etapas
 
 1. Refinar os tipos das colunas do banco (numéricos e booleano)
-2. docker-compose para subir o banco
-3. Diagnóstico avançado dos processos
-4. Monitoramento de processos com alto consumo de CPU
-5. Suporte ao monitoramento de múltiplas máquinas
-6. Deploy em cloud
+2. Diagnóstico avançado dos processos
+3. Monitoramento de processos com alto consumo de CPU
+4. Suporte ao monitoramento de múltiplas máquinas
+5. Deploy em cloud
 
 O objetivo final é transformar o protótipo local em uma solução de monitoramento capaz de acompanhar múltiplos computadores e disponibilizar os dados por meio de uma aplicação web.
