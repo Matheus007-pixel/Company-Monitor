@@ -1,0 +1,17 @@
+services:
+  banco:
+    image: postgres:18
+    container_name: company-monitor-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: monitor_app
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no arquivo .env}
+      POSTGRES_DB: company_monitor
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql
+      - ./docker/init:/docker-entrypoint-initdb.d:ro
+
+volumes:
+  pgdata:
