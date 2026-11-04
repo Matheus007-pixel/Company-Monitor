@@ -2,7 +2,7 @@
 
 Aplicação de monitoramento e análise de desempenho de computadores, desenvolvida em Python para Windows.
 
-O projeto coleta métricas da máquina, classifica o estado dos recursos, identifica os processos que mais consomem memória, guarda um histórico das medições em um banco PostgreSQL e apresenta tudo em um dashboard web com tema escuro feito com Streamlit. Os dados também ficam disponíveis por uma API REST com FastAPI. Também pode ser executado no terminal.
+O projeto coleta métricas da máquina, classifica o estado dos recursos, identifica os processos que mais consomem memória, guarda um histórico das medições em um banco PostgreSQL (que pode rodar em Docker) e apresenta tudo em um dashboard web com tema escuro feito com Streamlit. Os dados também ficam disponíveis por uma API REST com FastAPI. Também pode ser executado no terminal.
 
 ![Dashboard do Company Monitor](docs/dashboard.png)
 
@@ -13,6 +13,7 @@ O projeto coleta métricas da máquina, classifica o estado dos recursos, identi
 * Altair (gráficos do dashboard)
 * FastAPI (API REST)
 * PostgreSQL com psycopg (histórico das medições)
+* Docker e docker-compose (banco PostgreSQL em container)
 * python-dotenv (configuração por variáveis de ambiente)
 * Pandas (gráficos e filtros do histórico)
 * psutil (coleta de dados do sistema)
@@ -28,6 +29,7 @@ O projeto coleta métricas da máquina, classifica o estado dos recursos, identi
 * Definição do status geral da máquina
 * Identificação dos processos com maior consumo de RAM, em porcentagem e MB, somando as instâncias do mesmo programa
 * Histórico de medições salvo em PostgreSQL
+* Banco de dados pronto para subir com um comando, via docker-compose
 * Indicadores históricos: médias, valores máximos, tendência de CPU e RAM e contagem de medições por estado
 * Dashboard web com tema escuro e diagnósticos coloridos por gravidade
 * Cabeçalho com selo do status geral da máquina
@@ -44,8 +46,10 @@ O projeto coleta métricas da máquina, classifica o estado dos recursos, identi
 ## Requisitos
 
 * Python 3.14
-* PostgreSQL 18
 * Windows (a coleta de disco usa o drive `C:\`)
+* Um banco PostgreSQL 18, de uma das duas formas:
+  * Docker Desktop (recomendado), ou
+  * PostgreSQL 18 instalado no computador
 
 ## Como executar
 
@@ -89,7 +93,47 @@ Com a API no ar, a documentação interativa fica em `http://127.0.0.1:8000/docs
 
 ## Configuração do banco de dados
 
-O histórico fica em um banco PostgreSQL. A tabela `historico` é criada automaticamente na primeira execução.
+O histórico fica em um banco PostgreSQL. A tabela `historico` é criada automaticamente na primeira execução. Há dois caminhos para ter o banco: Docker (recomendado) ou um PostgreSQL instalado no computador.
+
+### Opção 1: Docker (recomendada)
+
+O dashboard, a API e o monitor continuam rodando direto no Windows, porque precisam ler os dados da máquina real. O Docker é usado só para o banco.
+
+1. Instale o [Docker Desktop](https://www.docker.com/products/docker-desktop/) e deixe-o aberto.
+
+2. Copie o arquivo de exemplo e edite o `.env`:
+```bash
+copy .env.example .env
+```
+Preencha `DB_PASSWORD` e adicione a linha `DB_PORT=5433`. O arquivo está no `.gitignore` e nunca deve ser enviado ao GitHub.
+
+3. Suba o banco:
+```bash
+docker compose up -d
+```
+
+4. Confira se o container está rodando:
+```bash
+docker compose ps
+```
+
+O `docker-compose.yml` cria o usuário `monitor_app` e o banco `company_monitor` com a senha do `.env`. O script em `docker/init/` cria também o `company_monitor_test`, usado só pelos testes. Os dados ficam em um volume do Docker (`pgdata`), então não se perdem quando o container é parado.
+
+Comandos úteis:
+
+| Comando | O que faz |
+| --- | --- |
+| `docker compose stop` | Para o banco, mantendo os dados |
+| `docker compose start` | Liga o banco novamente |
+| `docker compose down` | Remove o container, mantendo os dados no volume |
+| `docker compose down -v` | Remove o container **e apaga os dados** |
+
+Observações:
+
+* O banco usa a porta **5433** no computador, para não conflitar com um PostgreSQL já instalado, que normalmente usa a 5432.
+* A senha e a criação dos bancos só valem na **primeira** criação do volume. Para trocar a senha depois, é preciso recriar o volume com `docker compose down -v`, o que apaga os dados.
+
+### Opção 2: PostgreSQL instalado
 
 1. Crie dois bancos no PostgreSQL: `company_monitor` (dados reais) e `company_monitor_test` (usado só pelos testes).
 
@@ -100,15 +144,19 @@ copy .env.example .env
 
 3. Edite o `.env`. O arquivo está no `.gitignore` e nunca deve ser enviado ao GitHub.
 
+### Variáveis do `.env`
+
 | Variável | Obrigatória | Padrão |
 | --- | --- | --- |
 | `DB_PASSWORD` | Sim | (sem padrão) |
 | `DB_HOST` | Não | `localhost` |
-| `DB_PORT` | Não | `5432` |
+| `DB_PORT` | Não | `5432` (use `5433` com o Docker) |
 | `DB_NAME` | Não | `company_monitor` |
 | `DB_USER` | Não | `monitor_app` |
 
-4. Se já existir um histórico antigo em CSV (`dados/historico.csv`), importe-o para o banco. O script não duplica medições se for executado mais de uma vez:
+### Histórico antigo em CSV
+
+Se já existir um histórico antigo em CSV (`dados/historico.csv`), importe-o para o banco. O script não duplica medições se for executado mais de uma vez:
 ```bash
 python migrar_csv.py
 ```
@@ -144,6 +192,9 @@ Company-Monitor/
 │   └── config.toml     # Tema escuro do dashboard
 ├── dados/
 │   └── historico.csv   # Histórico antigo em CSV (usado só na migração, se existir)
+├── docker/
+│   └── init/
+│       └── 01-criar-banco-teste.sql  # Cria o banco de testes na primeira subida
 ├── docs/
 │   ├── dashboard.png   # Captura de tela do dashboard
 │   └── evolucao.md     # Evolução técnica e decisões
@@ -155,6 +206,7 @@ Company-Monitor/
 ├── analise.py          # Classificação e análise dos dados
 ├── api.py              # API REST com FastAPI
 ├── dashboard.py        # Interface web com Streamlit
+├── docker-compose.yml  # Banco PostgreSQL em container
 ├── historico.py        # Leitura e gravação do histórico no PostgreSQL
 ├── main.py             # Execução no terminal
 ├── migrar_csv.py       # Importa o histórico antigo em CSV para o banco
@@ -206,9 +258,9 @@ Spotify.exe - 3.56% - 282.45 MB
 * [x] API com FastAPI
 * [x] Testes da API
 * [x] Refino visual do dashboard (tema escuro, cartões e selo de status)
+* [x] Docker (docker-compose para o banco)
 * [ ] Refinar os tipos das colunas do banco (numéricos e booleano)
 * [ ] Diagnóstico avançado dos processos
-* [ ] Docker (docker-compose para o banco)
 * [ ] Monitoramento de múltiplas máquinas
 * [ ] Deploy em cloud
 
