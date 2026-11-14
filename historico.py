@@ -38,10 +38,10 @@ def _criar_tabela(conexao):
             id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
             data_hora TIMESTAMP NOT NULL,
             computador TEXT NOT NULL,
-            cpu TEXT NOT NULL,
-            ram TEXT NOT NULL,
-            disco TEXT NOT NULL,
-            internet TEXT NOT NULL,
+            cpu DOUBLE PRECISION NOT NULL,
+            ram DOUBLE PRECISION NOT NULL,
+            disco DOUBLE PRECISION NOT NULL,
+            internet BOOLEAN NOT NULL,
             status_geral TEXT NOT NULL
         )
     """)
@@ -59,10 +59,10 @@ def registrar_medicao(informacoes, status_geral):
             (
                 datetime.now(),
                 str(informacoes["computador"]),
-                str(informacoes["cpu"]),
-                str(informacoes["ram"]),
-                str(informacoes["disco"]),
-                str(informacoes["internet"]),
+                float(informacoes["cpu"]),
+                float(informacoes["ram"]),
+                float(informacoes["disco"]),
+                bool(informacoes["internet"]),
                 status_geral,
             ),
         )
@@ -83,6 +83,9 @@ def ler_historico():
     for linha in linhas:
         medicao = dict(zip(COLUNAS, linha))
         medicao["data_hora"] = medicao["data_hora"].strftime(FORMATO_DATA)
+        # O restante do sistema espera texto; os tipos reais ficam só no banco.
+        for coluna in ("cpu", "ram", "disco", "internet"):
+            medicao[coluna] = str(medicao[coluna])
         medicoes.append(medicao)
 
     return medicoes

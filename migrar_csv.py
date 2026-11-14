@@ -40,10 +40,10 @@ def migrar():
                     (
                         data_hora,
                         linha["computador"],
-                        linha["cpu"],
-                        linha["ram"],
-                        linha["disco"],
-                        linha["internet"],
+                        float(linha["cpu"]),
+                        float(linha["ram"]),
+                        float(linha["disco"]),
+                        linha["internet"].strip().lower() == "true",
                         linha["status_geral"],
                     ),
                 )

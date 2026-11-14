@@ -79,3 +79,17 @@ def test_medicoes_voltam_em_ordem_de_registro():
     status = [m["status_geral"] for m in ler_historico()]
 
     assert status == ["OK", "ATENÇÃO"]
+
+def test_colunas_tem_os_tipos_corretos():
+    with _conectar() as conexao:
+        tipos = dict(
+            conexao.execute(
+                "SELECT column_name, data_type FROM information_schema.columns "
+                "WHERE table_name = 'historico'"
+            ).fetchall()
+        )
+
+    assert tipos["cpu"] == "double precision"
+    assert tipos["ram"] == "double precision"
+    assert tipos["disco"] == "double precision"
+    assert tipos["internet"] == "boolean"
